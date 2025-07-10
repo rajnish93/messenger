@@ -16,7 +16,7 @@ export interface Message {
   senderId: string;
   receiverId: string;
   text: string;
-  timestamp: Date;
+  timestamp: string;
 }
 
 export interface Chat {

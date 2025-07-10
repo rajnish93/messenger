@@ -1,8 +1,8 @@
 import { useSelector } from 'react-redux';
 import Login from './components/Login';
 import { isLoggedIn } from './redux/selectors';
-import Header from './components/Chat/Header';
 import ChatWindow from './components/Chat/ChatWindow';
+import ChatSideBar from './components/Chat/ChatSideBar';
 
 const App = () => {
   const isSignIn = useSelector(isLoggedIn);
@@ -12,8 +12,8 @@ const App = () => {
   }
 
   return (
-    <div className="h-screen w-screen">
-      <Header />
+    <div className="flex h-screen">
+      <ChatSideBar />
       <ChatWindow />
     </div>
   );

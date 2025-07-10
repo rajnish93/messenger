@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { MessengerState, User } from './types';
+import type { Message, MessengerState, User } from './types';
 
 const initialState: MessengerState = {
   isLoggedIn: false,
@@ -26,10 +26,31 @@ const messengerSlice = createSlice({
     setSelectedUser(state, action: PayloadAction<User | null>) {
       state.selectedUser = action.payload;
     },
+    setMessage(state, action: PayloadAction<Message>) {
+      const message = action.payload;
+      const targetUserId =
+        message.senderId === state.currentUser?.id
+          ? message.receiverId
+          : message.senderId;
+      const existingChatIndex = state.chats.findIndex(
+        (chat) => chat.userId === targetUserId
+      );
+
+      if (existingChatIndex >= 0) {
+        state.chats[existingChatIndex].messages.push(message);
+      } else {
+        state.chats.push({ userId: targetUserId, messages: [message] });
+      }
+    },
   },
 });
 
-export const { setLoggedIn, setCurrentUser, logout, setSelectedUser } =
-  messengerSlice.actions;
+export const {
+  setLoggedIn,
+  setCurrentUser,
+  logout,
+  setSelectedUser,
+  setMessage,
+} = messengerSlice.actions;
 
 export default messengerSlice.reducer;

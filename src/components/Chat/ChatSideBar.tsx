@@ -6,7 +6,7 @@ import { LogOut } from 'lucide-react';
 import UserListItem from './UserListItem';
 import { users } from '../../utils/users';
 
-const Header = () => {
+const ChatSideBar = () => {
   const dispatch = useDispatch<AppDispatch>();
   const loggedInUser = useSelector(currentUser);
   const userList = users.filter(user => user.id !== loggedInUser?.id);
@@ -33,7 +33,6 @@ const Header = () => {
     <div className="p-4 border-b border-gray-200">
       <h2 className="text-sm font-semibold text-gray-600">Chats</h2>
     </div>
-
     <div className="flex-1 overflow-y-auto">
       {userList.map(user => (
         <UserListItem
@@ -50,4 +49,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default ChatSideBar;

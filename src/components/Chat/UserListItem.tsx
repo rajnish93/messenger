@@ -34,7 +34,10 @@ const UserListItem = ({
     if (messages.length === 0) return undefined;
 
     return messages
-      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+      .sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      )
       .at(-1);
   };
 
