@@ -7,4 +7,19 @@ export interface User {
 export interface MessengerState {
   isLoggedIn: boolean;
   currentUser: User | null;
+  selectedUser: User | null;
+  chats: Chat[];
+}
+
+export interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  text: string;
+  timestamp: Date;
+}
+
+export interface Chat {
+  userId: string;
+  messages: Message[];
 }

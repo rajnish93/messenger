@@ -4,6 +4,8 @@ import type { MessengerState, User } from './types';
 const initialState: MessengerState = {
   isLoggedIn: false,
   currentUser: null,
+  selectedUser: null,
+  chats: [],
 };
 
 const messengerSlice = createSlice({
@@ -18,10 +20,16 @@ const messengerSlice = createSlice({
     },
     logout(state) {
       state.isLoggedIn = false;
+      state.currentUser = null;
+      state.selectedUser = null;
+    },
+    setSelectedUser(state, action: PayloadAction<User | null>) {
+      state.selectedUser = action.payload;
     },
   },
 });
 
-export const { setLoggedIn, setCurrentUser, logout } = messengerSlice.actions;
+export const { setLoggedIn, setCurrentUser, logout, setSelectedUser } =
+  messengerSlice.actions;
 
 export default messengerSlice.reducer;
