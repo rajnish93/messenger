@@ -1,3 +1,7 @@
+/**
+ * Type definitions for messenger state, users, messages, chats, and groups.
+ */
+
 export interface User {
   id: string;
   name: string;
@@ -5,10 +9,11 @@ export interface User {
 }
 
 export interface MessengerState {
-  isLoggedIn: boolean;
   currentUser: User | null;
-  selectedUser: User | null;
+  selectedChat: SelectedChat;
   chats: Chat[];
+  groups: Group[];
+  isLoggedIn: boolean;
 }
 
 export interface Message {
@@ -20,6 +25,18 @@ export interface Message {
 }
 
 export interface Chat {
-  userId: string;
+  userId?: string;
+  groupId?: string;
   messages: Message[];
 }
+
+export interface Group {
+  id: string;
+  name: string;
+  memberIds: string[];
+}
+
+export type SelectedChat =
+  | { type: 'user'; id: string }
+  | { type: 'group'; id: string }
+  | null;

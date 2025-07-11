@@ -1,6 +1,10 @@
 import type { Chat, Message, User } from '../../redux/types';
 import { formatTime } from '../../utils/time';
 
+/**
+ * UserListItem - Renders a user in the chat sidebar with their avatar, name, and last message.
+ * Highlights if selected and shows the time of the last message.
+ */
 interface UserListItemProps {
   user: User;
   isSelected: boolean;
@@ -16,6 +20,8 @@ const UserListItem = ({
   chats,
   onClick,
 }: UserListItemProps) => {
+  
+  // Get the last message exchanged with this user.
   const getLastMessage = (): Message | undefined => {
     const messages: Message[] = [];
 
@@ -32,7 +38,7 @@ const UserListItem = ({
     });
 
     if (messages.length === 0) return undefined;
-
+    
     return messages
       .sort(
         (a, b) =>
@@ -43,6 +49,7 @@ const UserListItem = ({
 
   const lastMessage = getLastMessage();
 
+  // Render
   return (
     <div
       onClick={onClick}
