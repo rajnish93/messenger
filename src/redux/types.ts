@@ -22,6 +22,7 @@ export interface Message {
   receiverId: string;
   text: string;
   timestamp: string;
+  readBy?: string[]; // user IDs who have read this message
 }
 
 export interface Chat {

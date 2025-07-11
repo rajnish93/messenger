@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   currentUser,
   selectedChat,
@@ -8,6 +8,7 @@ import {
 } from '../../redux/selectors';
 import { formatTime } from '../../utils/time';
 import { users } from '../../utils/users';
+import { markMessagesAsRead } from '../../redux/messengerSlice';
 
 /**
  * MessageList - Displays the list of messages for the current chat.
@@ -15,11 +16,23 @@ import { users } from '../../utils/users';
  */
 const MessageList = () => {
   // State and Selectors
+  const dispatch = useDispatch();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedChatData = useSelector(selectedChat);
   const selectedUserData = useSelector(selectedUser);
   const loggedInUser = useSelector(currentUser);
   const messages = useSelector(selectedChatMessages);
+
+  // Mark messages as read when chat/messages change
+  useEffect(() => {
+    if (selectedChatData && loggedInUser) {
+      dispatch(markMessagesAsRead({
+        chatType: selectedChatData.type,
+        chatId: selectedChatData.id,
+        userId: loggedInUser.id,
+      }));
+    }
+  }, [selectedChatData, messages, loggedInUser, dispatch]);
 
   // Scroll to the bottom of the message list when messages or chat changes.
   const scrollToBottom = () => {

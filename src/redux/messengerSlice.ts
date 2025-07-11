@@ -58,33 +58,67 @@ const messengerSlice = createSlice({
       }>
     ) {
       const { message, target, id } = action.payload;
+      // Initialize readBy with senderId (the sender has read their own message)
+      const messageWithReadBy = { ...message, readBy: [message.senderId] };
       if (target === 'user') {
         // Add message to both sender's and receiver's chat objects
         const senderChat = state.chats.find((c) => c.userId === id);
         if (senderChat) {
-          senderChat.messages.push(message);
+          senderChat.messages.push(messageWithReadBy);
         } else {
-          state.chats.push({ userId: id, messages: [message] } as Chat);
+          state.chats.push({ userId: id, messages: [messageWithReadBy] } as Chat);
         }
         // Also add to the reverse chat (so the receiver sees it)
         const receiverChat = state.chats.find(
           (c) => c.userId === message.senderId
         );
         if (receiverChat) {
-          receiverChat.messages.push(message);
+          receiverChat.messages.push(messageWithReadBy);
         } else {
           state.chats.push({
             userId: message.senderId,
-            messages: [message],
+            messages: [messageWithReadBy],
           } as Chat);
         }
       } else {
         // Group chat: add message to the group chat object
         const chat = state.chats.find((c) => c.groupId === id);
         if (chat) {
-          chat.messages.push(message);
+          chat.messages.push(messageWithReadBy);
         } else {
-          state.chats.push({ groupId: id, messages: [message] } as Chat);
+          state.chats.push({ groupId: id, messages: [messageWithReadBy] } as Chat);
+        }
+      }
+    },
+    // Mark all messages in a chat as read by a user
+    markMessagesAsRead(
+      state,
+      action: PayloadAction<{ chatType: 'user' | 'group'; chatId: string; userId: string }>
+    ) {
+      const { chatType, chatId, userId } = action.payload;
+      if (chatType === 'user') {
+        // Mark as read in both chat objects (for both users)
+        const chatsToMark = state.chats.filter(
+          (c) => c.userId === chatId || c.userId === userId
+        );
+        chatsToMark.forEach((chat) => {
+          chat.messages.forEach((msg) => {
+            if (!msg.readBy) msg.readBy = [];
+            if (!msg.readBy.includes(userId)) {
+              msg.readBy.push(userId);
+            }
+          });
+        });
+      } else {
+        // Group chat: mark as read in the group chat object
+        const chat = state.chats.find((c) => c.groupId === chatId);
+        if (chat) {
+          chat.messages.forEach((msg) => {
+            if (!msg.readBy) msg.readBy = [];
+            if (!msg.readBy.includes(userId)) {
+              msg.readBy.push(userId);
+            }
+          });
         }
       }
     },
@@ -128,6 +162,7 @@ export const {
   createGroup,
   addUserToGroup,
   removeUserFromGroup,
+  markMessagesAsRead,
 } = messengerSlice.actions;
 
 // Export Reducer

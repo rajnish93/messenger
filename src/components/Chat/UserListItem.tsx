@@ -10,6 +10,7 @@ interface UserListItemProps {
   isSelected: boolean;
   currentUserId: string | undefined;
   chats: Chat[];
+  unreadCount:number
   onClick: () => void;
 }
 
@@ -18,6 +19,7 @@ const UserListItem = ({
   isSelected,
   currentUserId,
   chats,
+  unreadCount,
   onClick,
 }: UserListItemProps) => {
   
@@ -71,6 +73,13 @@ const UserListItem = ({
         {lastMessage && (
           <div className="text-xs text-gray-400 ml-2 whitespace-nowrap">
             {formatTime(lastMessage.timestamp)}
+          </div>
+        )}
+        {unreadCount > 0 && (
+          <div className="ml-2 flex items-center">
+            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white min-w-[20px] h-[20px]">
+              {unreadCount}
+            </span>
           </div>
         )}
       </div>

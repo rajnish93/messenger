@@ -47,3 +47,40 @@ export const selectedChatMessages = (state: RootState) => {
 
   return chat?.messages || [];
 };
+
+// Get unread message count for a chat (user or group) for the current user
+export const getUnreadCount = (
+  state: RootState,
+  chatType: 'user' | 'group',
+  chatId: string
+): number => {
+  const { currentUser, chats } = state.messenger;
+  if (!currentUser) return 0;
+
+  const chat = chats.find((c) =>
+    chatType === 'user' ? c.userId === chatId : c.groupId === chatId
+  );
+  if (!chat) return 0;
+
+  const userId = currentUser.id;
+
+  if (chatType === 'user') {
+    // Unread messages sent to the current user
+    return chat.messages.reduce(
+      (count, msg) =>
+        msg.receiverId === userId && !msg.readBy?.includes(userId)
+          ? count + 1
+          : count,
+      0
+    );
+  } else {
+    // Unread group messages not sent by the current user
+    return chat.messages.reduce(
+      (count, msg) =>
+        msg.senderId !== userId && !msg.readBy?.includes(userId)
+          ? count + 1
+          : count,
+      0
+    );
+  }
+};
