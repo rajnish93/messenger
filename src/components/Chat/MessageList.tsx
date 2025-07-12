@@ -5,6 +5,7 @@ import {
   selectedChat,
   selectedUser,
   selectedChatMessages,
+  selectedGroup,
 } from '../../redux/selectors';
 import { formatTime } from '../../utils/time';
 import { users } from '../../utils/users';
@@ -23,6 +24,7 @@ const MessageList = () => {
   const selectedUserData = useSelector(selectedUser);
   const loggedInUser = useSelector(currentUser);
   const messages = useSelector(selectedChatMessages);
+  const selectedGroupData = useSelector(selectedGroup);
 
   // Mark messages as read when chat/messages change
   useEffect(() => {
@@ -74,19 +76,37 @@ const MessageList = () => {
     );
   }
 
+  const groupMemberIds = users
+    .filter((user) => selectedGroupData?.memberIds.includes(user.id))
+    .map((user) => user.id);
+
   // Render
   return (
     <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
       {filteredMessages.map((message) => {
-        const isCurrentUser = message.senderId === loggedInUser?.id;
-        const receiverId = message.receiverId;
-        const readBy = message.readBy || [];
-        const isReadBySender = readBy.includes(message.senderId);
-        const isReadByReceiver = receiverId && readBy.includes(receiverId);
-        const isReadByBoth = isReadBySender && isReadByReceiver;
-        const isMessageSeen = isCurrentUser && isReadByBoth;
-        const isMessageSent =
-          isCurrentUser && isReadBySender && !isReadByReceiver;
+       const isCurrentUser = message.senderId === loggedInUser?.id;
+       const readBy = message.readBy ?? [];
+       const isGroupChat = selectedChatData?.type === 'group';
+     
+       let isMessageSeen = false;
+       let isMessageSent = false;
+     
+       if (isGroupChat && isCurrentUser) {
+         // For group chat, consider message "seen" if all group members (excluding sender) have read it
+         const groupMemberIdsExcludingSender = groupMemberIds.filter(
+           id => id !== loggedInUser?.id
+         );
+         isMessageSeen = groupMemberIdsExcludingSender.every(id =>
+           readBy.includes(id)
+         );
+         isMessageSent = !isMessageSeen;
+       } else if (!isGroupChat && isCurrentUser) {
+         // 1-to-1 chat
+         const isReadBySender = readBy.includes(message.senderId);
+         const isReadByReceiver = readBy.includes(message.receiverId);
+         isMessageSeen = isReadBySender && isReadByReceiver;
+         isMessageSent = isReadBySender && !isReadByReceiver;
+       }
 
         return (
           <div
