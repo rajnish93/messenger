@@ -9,6 +9,7 @@ import {
 import { formatTime } from '../../utils/time';
 import { users } from '../../utils/users';
 import { markMessagesAsRead } from '../../redux/messengerSlice';
+import { Check, CheckCheck } from 'lucide-react';
 
 /**
  * MessageList - Displays the list of messages for the current chat.
@@ -26,11 +27,13 @@ const MessageList = () => {
   // Mark messages as read when chat/messages change
   useEffect(() => {
     if (selectedChatData && loggedInUser) {
-      dispatch(markMessagesAsRead({
-        chatType: selectedChatData.type,
-        chatId: selectedChatData.id,
-        userId: loggedInUser.id,
-      }));
+      dispatch(
+        markMessagesAsRead({
+          chatType: selectedChatData.type,
+          chatId: selectedChatData.id,
+          userId: loggedInUser.id,
+        })
+      );
     }
   }, [selectedChatData, messages, loggedInUser, dispatch]);
 
@@ -48,7 +51,7 @@ const MessageList = () => {
     if (selectedChatData?.type === 'user') {
       return selectedUserData?.name || 'Unknown User';
     } else if (selectedChatData?.type === 'group') {
-      const user = users.find(u => u.id === senderId);
+      const user = users.find((u) => u.id === senderId);
       return user?.name || 'Unknown User';
     }
     return 'Unknown User';
@@ -56,8 +59,7 @@ const MessageList = () => {
 
   // Clone messages before sorting to avoid mutating Redux state
   const sortedMessages = [...messages].sort(
-    (a, b) =>
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
 
   // Filter messages for 1:1 chats to only show those between the logged-in user and the selected user
@@ -65,49 +67,65 @@ const MessageList = () => {
   if (selectedChatData?.type === 'user' && loggedInUser && selectedUserData) {
     filteredMessages = sortedMessages.filter(
       (msg) =>
-        (msg.senderId === loggedInUser.id && msg.receiverId === selectedUserData.id) ||
-        (msg.senderId === selectedUserData.id && msg.receiverId === loggedInUser.id)
+        (msg.senderId === loggedInUser.id &&
+          msg.receiverId === selectedUserData.id) ||
+        (msg.senderId === selectedUserData.id &&
+          msg.receiverId === loggedInUser.id)
     );
   }
 
   // Render
   return (
     <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-      {filteredMessages.map((message) => (
-        <div
-          key={message.id}
-          className={`mb-4 flex ${
-            message.senderId === loggedInUser?.id
-              ? 'justify-end'
-              : 'justify-start'
-          }`}
-        >
+      {filteredMessages.map((message) => {
+        const isCurrentUser = message.senderId === loggedInUser?.id;
+        const receiverId = message.receiverId;
+        const readBy = message.readBy || [];
+        const isReadBySender = readBy.includes(message.senderId);
+        const isReadByReceiver = receiverId && readBy.includes(receiverId);
+        const isReadByBoth = isReadBySender && isReadByReceiver;
+        const isMessageSeen = isCurrentUser && isReadByBoth;
+        const isMessageSent =
+          isCurrentUser && isReadBySender && !isReadByReceiver;
+
+        return (
           <div
-            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-              message.senderId === loggedInUser?.id
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-800 border border-gray-200'
+            key={message.id}
+            className={`mb-4 flex ${
+              isCurrentUser ? 'justify-end' : 'justify-start'
             }`}
           >
-            {/* Show sender name for group messages */}
-            {selectedChatData?.type === 'group' && (
-              <div className="text-xs font-medium mb-1">
-                {getSenderName(message.senderId)}
-              </div>
-            )}
-            <div className="text-sm">{message.text}</div>
             <div
-              className={`text-xs mt-1 ${
-                message.senderId === loggedInUser?.id
-                  ? 'text-blue-100'
-                  : 'text-gray-500'
+              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                isCurrentUser
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white text-gray-800 border border-gray-200'
               }`}
             >
-              {formatTime(message.timestamp)}
+              {/* Show sender name for group messages */}
+              {selectedChatData?.type === 'group' && (
+                <div className="text-xs font-medium mb-1">
+                  {getSenderName(message.senderId)}
+                </div>
+              )}
+              <div className="text-sm">{message.text}</div>
+              <div
+                className={`text-xs mt-1 flex items-center ${
+                  isCurrentUser ? 'text-blue-100' : 'text-gray-500'
+                }`}
+              >
+                {formatTime(message.timestamp)}
+                {isMessageSent && message.timestamp && (
+                  <Check size={16} className="ml-2" />
+                )}
+                {isMessageSeen && message.timestamp && (
+                  <CheckCheck size={16} className="ml-2 text-blue-100" />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <div ref={messagesEndRef} />
     </div>
   );
